@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "phone required" }, { status: 400 });
   }
   const normalized = normalizePhone(phone);
-  const customer = upsertCustomer(normalized);
+  const customer = await upsertCustomer(normalized);
   return NextResponse.json({ phone: normalized, ...customer });
 }
 
@@ -18,6 +18,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "phone required" }, { status: 400 });
   }
   const normalized = normalizePhone(phone);
-  const customer = upsertCustomer(normalized);
+  const customer = await upsertCustomer(normalized);
   return NextResponse.json({ phone: normalized, ...customer });
 }

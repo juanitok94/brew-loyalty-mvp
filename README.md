@@ -29,9 +29,12 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```
 ODDS_ADMIN_PASSWORD=your-secure-password-here
+LANCEDB_URI=db://your-database
+LANCEDB_API_KEY=your-lancedb-api-key
+LANCEDB_REGION=us-east-1
 ```
 
-Set in `.env.local` locally. Set in Vercel dashboard for production.
+Set in `.env.local` locally. Set the same values in the Vercel dashboard for production.
 
 ## Deploy to Vercel
 
@@ -40,13 +43,13 @@ Set in `.env.local` locally. Set in Vercel dashboard for production.
 3. Add `ODDS_ADMIN_PASSWORD` environment variable
 4. Deploy
 
-> **Note:** The JSON file store works in development. For production with persistent data across deployments, upgrade to Vercel KV. See `src/lib/stamps.ts` to swap the backend — it is one file.
+> **Note:** Storage now lives behind LanceDB in `src/lib/stamps.ts` using a remote connection suitable for Vercel deployment.
 
 ## Tech Stack
 
 - Next.js 15, TypeScript, Tailwind CSS 4, App Router
 - PWA (manifest + apple-touch-icon)
-- Data: `src/data/stamps.json` (flat file, no database)
+- Data: remote LanceDB (`customers` and `stamp_transactions`)
 
 ## Owner: Peachy Kean DevOps LLC
 

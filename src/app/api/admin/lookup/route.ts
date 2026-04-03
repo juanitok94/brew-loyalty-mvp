@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   const normalized = normalizePhone(phone);
-  const customer = getCustomer(normalized);
+  const customer = await getCustomer(normalized);
   if (!customer) {
     return NextResponse.json({ error: "Customer not found" }, { status: 404 });
   }

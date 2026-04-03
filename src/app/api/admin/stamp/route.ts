@@ -14,6 +14,6 @@ export async function POST(req: NextRequest) {
   }
 
   const normalized = normalizePhone(phone);
-  const customer = addStamp(normalized);
+  const customer = await addStamp(normalized);
   return NextResponse.json({ phone: normalized, ...customer });
 }

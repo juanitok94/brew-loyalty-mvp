@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   }
 
   const normalized = normalizePhone(phone);
-  const customer = redeemReward(normalized);
+  const customer = await redeemReward(normalized);
   if (!customer) {
     return NextResponse.json({ error: "Not enough stamps to redeem" }, { status: 400 });
   }
