@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import QRCode from "qrcode";
 import { STAMPS_REQUIRED } from "@/lib/constants";
 
 type CustomerData = {
@@ -38,6 +39,7 @@ function CardContent() {
   const [data, setData] = useState<CustomerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [qrCodeSrc, setQrCodeSrc] = useState("");
 
   useEffect(() => {
     if (!rawPhone) {
@@ -55,6 +57,24 @@ function CardContent() {
         setLoading(false);
       });
   }, [rawPhone, router]);
+
+  useEffect(() => {
+    if (!data?.phone) {
+      setQrCodeSrc("");
+      return;
+    }
+
+    QRCode.toDataURL(data.phone, {
+      margin: 1,
+      width: 192,
+      color: {
+        dark: "#6B4F36",
+        light: "#FFFFFF",
+      },
+    })
+      .then(setQrCodeSrc)
+      .catch(() => setQrCodeSrc(""));
+  }, [data?.phone]);
 
   if (loading) {
     return (
@@ -167,6 +187,24 @@ function CardContent() {
         <p className="text-center text-xs" style={{ color: "var(--stamp-empty)" }}>
           Last visit: {data.lastVisit}
         </p>
+
+        {qrCodeSrc && (
+          <div
+            className="rounded-2xl p-5 text-center space-y-3"
+            style={{ background: "#fff", border: "1.5px solid var(--stamp-empty)" }}
+          >
+            <img
+              src={qrCodeSrc}
+              alt={`QR code for ${data.phone}`}
+              className="mx-auto rounded-xl"
+              width={192}
+              height={192}
+            />
+            <p className="text-sm font-medium" style={{ color: "var(--brown-light)" }}>
+              Show this at the counter
+            </p>
+          </div>
+        )}
 
         <button
           onClick={() => router.push("/")}

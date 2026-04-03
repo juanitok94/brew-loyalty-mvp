@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import CustomerScanPanel from "@/components/CustomerScanPanel";
 import { STAMPS_REQUIRED } from "@/lib/constants";
 
 type CustomerData = {
@@ -22,6 +23,7 @@ export default function AdminCustomerPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     const pw = sessionStorage.getItem("adminPw");
@@ -46,26 +48,30 @@ export default function AdminCustomerPage() {
     setCustomer(null);
   }
 
-  async function lookupCustomer(e: React.FormEvent) {
-    e.preventDefault();
-    const digits = phoneInput.replace(/\D/g, "");
+  async function loadCustomerByDigits(digits: string) {
     if (digits.length !== 10) {
       setError("Enter a valid 10-digit number.");
       return;
     }
+
     setLoading(true);
     setError("");
     setMessage("");
     setCustomer(null);
+
     try {
       const res = await fetch("/api/admin/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: digits, password }),
       });
-      if (res.status === 401) { router.replace("/admin"); return; }
+
+      if (res.status === 401) {
+        router.replace("/admin");
+        return;
+      }
+
       if (res.status === 404) {
-        // Auto-create by fetching stamps endpoint
         const createRes = await fetch("/api/stamps", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -83,6 +89,18 @@ export default function AdminCustomerPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function lookupCustomer(e: React.FormEvent) {
+    e.preventDefault();
+    await loadCustomerByDigits(phoneInput.replace(/\D/g, ""));
+  }
+
+  async function handleScan(scannedValue: string) {
+    const digits = scannedValue.replace(/\D/g, "").slice(-10);
+    setPhoneInput(formatDisplay(digits));
+    setShowScanner(false);
+    await loadCustomerByDigits(digits);
   }
 
   async function addStamp() {
@@ -164,7 +182,24 @@ export default function AdminCustomerPage() {
           >
             View QR Code
           </a>
+          <button
+            type="button"
+            onClick={() => setShowScanner((current) => !current)}
+            className="flex-1 py-2 rounded-xl text-center text-sm font-medium border"
+            style={{ borderColor: "var(--stamp-empty)", color: "var(--brown)" }}
+          >
+            {showScanner ? "Hide Scanner" : "Scan Customer"}
+          </button>
         </div>
+
+        {showScanner && (
+          <div
+            className="rounded-2xl p-4 space-y-3"
+            style={{ background: "#fff", border: "1.5px solid var(--stamp-empty)" }}
+          >
+            <CustomerScanPanel onScan={handleScan} />
+          </div>
+        )}
 
         {/* Lookup Form */}
         <form onSubmit={lookupCustomer} className="space-y-3">
